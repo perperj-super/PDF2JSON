@@ -4,6 +4,7 @@ import express, { Request, Response } from 'express';
 // Internal Dependencies
 import { uploadToBlob } from '../services/blobService';
 import { pdfUpload } from '../configs/multerConfig';
+import { extractPdfContent } from '../services/pdfService';
 
 const router = express.Router();
 
@@ -20,15 +21,21 @@ router.post('/process-pdf', pdfUpload.single('pdf'), async (req: Request, res: R
       });
     }
 
-    const blobData = await uploadToBlob(req.file.originalname, req.file.buffer);
+    // Upload the file to Vercel Blob
+    const blobStuff = await uploadToBlob(req.file.originalname, req.file.buffer);
+
+    // Extract text content from the PDF
+    const pdfText = await extractPdfContent(blobStuff.url);
 
     return res.status(200).json({
       success: true,
-      message: 'PDF uploaded successfully',
-      data: blobData,
+      message: 'PDF processed successfully',
+      data: {
+        ...blobStuff,
+        textContent: pdfText,
+      },
     });
   } catch (error) {
-    console.error('Error processing PDF:', error);
     return res.status(500).json({
       success: false,
       message: 'Error processing PDF document',

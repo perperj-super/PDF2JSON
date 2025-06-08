@@ -4,10 +4,12 @@ import multer from 'multer';
 export const pdfUpload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (_req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
+    const isPdf = file.mimetype === 'application/pdf';
+
+    if (isPdf) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF file type is allowed'));
+      cb(new Error('Sorry, only PDF files are accepted'));
     }
   },
   limits: {
