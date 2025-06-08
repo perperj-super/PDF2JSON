@@ -1,18 +1,31 @@
 // External Dependencies
 import express, { Request, Response } from 'express';
 
+// Internal Dependencies
+import { uploadToBlob } from '../services/blobService';
+import { pdfUpload } from '../configs/multerConfig';
+
 const router = express.Router();
 
 /**
  * @route POST /api/process-pdf
  * @desc Upload a PDF and return the JSON structure of the PDF
- * @param No Parameters
  */
-router.post('/process-pdf', (req: Request, res: Response) => {
+router.post('/process-pdf', pdfUpload.single('pdf'), async (req: Request, res: Response) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No PDF is uploaded',
+      });
+    }
+
+    const blobData = await uploadToBlob(req.file.originalname, req.file.buffer);
+
     return res.status(200).json({
       success: true,
-      message: 'PDF processed successfully',
+      message: 'PDF uploaded successfully',
+      data: blobData,
     });
   } catch (error) {
     console.error('Error processing PDF:', error);
