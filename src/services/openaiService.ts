@@ -1,13 +1,25 @@
 // External Dependencies
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY,
-});
+export const createOpenAIClient = () => {
+  return new OpenAI({
+    apiKey: process.env.OPENAI_KEY,
+  });
+};
+
+let openaiClient: OpenAI;
+
+const getOpenAIClient = () => {
+  if (!openaiClient) {
+    openaiClient = createOpenAIClient();
+  }
+  return openaiClient;
+};
 
 export const extractJsonFromText = async (pdfText: string): Promise<any> => {
   try {
-    const response = await openai.chat.completions.create({
+    const client = getOpenAIClient();
+    const response = await client.chat.completions.create({
       model: 'gpt-4o',
       messages: [
         {
