@@ -5,6 +5,7 @@ import express, { Request, Response } from 'express';
 import { uploadToBlob } from '../services/blobService';
 import { pdfUpload } from '../configs/multerConfig';
 import { extractPdfContent } from '../services/pdfService';
+import { extractJsonFromText } from '../services/openaiService';
 
 const router = express.Router();
 
@@ -27,13 +28,13 @@ router.post('/process-pdf', pdfUpload.single('pdf'), async (req: Request, res: R
     // Extract text content from the PDF
     const pdfText = await extractPdfContent(blobStuff.url);
 
+    // Extract structured JSON from the PDF text using OpenAI
+    const jsonData = await extractJsonFromText(pdfText);
+
     return res.status(200).json({
       success: true,
       message: 'PDF processed successfully',
-      data: {
-        ...blobStuff,
-        textContent: pdfText,
-      },
+      data: jsonData,
     });
   } catch (error) {
     return res.status(500).json({
